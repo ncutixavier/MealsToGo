@@ -1,42 +1,84 @@
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
+import RestaurantScreen from "./src/features/screens/Restaurant.screen";
+import { ThemeProvider } from "styled-components/native";
+import { theme } from "./src/infrastructure/theme";
 import {
-  StyleSheet,
-  Text,
-  View,
-  SafeAreaView,
-  Platform,
-  StatusBar
-} from "react-native";
+  useFonts as useOswald,
+  Oswald_400Regular,
+} from "@expo-google-fonts/oswald";
+import { useFonts as useLato, Lato_400Regular } from "@expo-google-fonts/lato";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
+import { Text, View } from "react-native";
+import SafeArea from "./src/utils/SafeArea.component";
+import { Ionicons } from "@expo/vector-icons";
+import styled from "styled-components/native";
 
-export default function App() {
+const Tab = createBottomTabNavigator();
+
+function SettingsScreen() {
   return (
-    <>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.searchBar}>
-          <Text>Test App</Text>
-        </View>
-        <View style={styles.listContainer}>
-          <Text>Test App</Text>
-        </View>
-      </SafeAreaView>
-      <ExpoStatusBar style="auto"/>
-    </>
+    <SafeArea>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Settings!</Text>
+      </View>
+    </SafeArea>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-  },
-  searchBar: {
-    backgroundColor: "green",
-    padding: 10,
-  },
-  listContainer: {
-    backgroundColor: "blue",
-    flex: 1,
-    padding: 10,
+function MapScreen() {
+  return (
+    <SafeArea>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Map!</Text>
+      </View>
+    </SafeArea>
+  );
+}
+
+export default function App() {
+  const [oswaldLoaded] = useOswald({
+    Oswald_400Regular,
+  });
+
+  const [latoLoaded] = useLato({
+    Lato_400Regular,
+  });
+
+  if (!oswaldLoaded || !latoLoaded) {
+    return null;
   }
-});
+
+  return (
+    <>
+      <ThemeProvider theme={theme}>
+        <NavigationContainer>
+          <Tab.Navigator
+            screenOptions={({ route }) => ({
+              headerShown: false,
+              tabBarIcon: ({ focused, color, size }) => {
+                let iconName;
+                if (route.name === "Restaurant") {
+                  iconName = "md-restaurant";
+                } else if (route.name === "Settings") {
+                  iconName = "md-settings";
+                } else if (route.name === "Map") { 
+                  iconName = "md-map"
+                }
+
+                return <Ionicons name={iconName} size={size} color={color} />;
+              },
+              tabBarActiveTintColor: `${theme.colors.brand.primary}`,
+              tabBarInactiveTintColor: "gray",
+            })}
+          >
+            <Tab.Screen name="Restaurant" component={RestaurantScreen} />
+            <Tab.Screen name="Map" component={MapScreen} />
+            <Tab.Screen name="Settings" component={SettingsScreen} />
+          </Tab.Navigator>
+        </NavigationContainer>
+      </ThemeProvider>
+      <ExpoStatusBar style="auto" />
+    </>
+  );
+}
